@@ -9,10 +9,66 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.polito.tdp.crimes.model.Event;
+import it.polito.tdp.crimes.model.VerticeEPosizione;
 
 
 
 public class EventsDao {
+	
+	public List<VerticeEPosizione> getPos(int anno){
+		String sql="SELECT e.district_id AS id, AVG(e.geo_lon) AS longitudine, AVG(e.geo_lat) AS latitudine "+
+				"FROM events e "+
+				"WHERE YEAR(e.reported_date)=? "+
+				"GROUP BY e.district_id";
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, anno);
+			
+			List<VerticeEPosizione> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(new VerticeEPosizione(res.getInt("id"),res.getDouble("longitudine"),res.getDouble("latitudine")));
+			}
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	public List<Integer> getDistretto(){
+		String sql="SELECT DISTINCT district_id AS id "+
+				"FROM events ";
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			List<Integer> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(res.getInt("id"));
+			}
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+		
+	}
 	
 	public List<Event> listAllEvents(){
 		String sql = "SELECT * FROM events" ;
